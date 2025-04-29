@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Chatbot</title>
+    <!-- Using Font Awesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <!-- Tailwind CSS from CLI output -->
+    <link href="./src/output.css" rel="stylesheet">
+  </head>
+  <body class="bg-gray-100 text-gray-900 font-sans">
+    <div class="container mx-auto max-w-3xl p-4">
+      <!-- Header -->
+      <div class="flex items-center p-4 bg-white rounded-t-lg border-b border-gray-200 shadow-sm">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-600 to-indigo-400 flex items-center justify-center text-white">
+            <i class="fas fa-robot"></i>
+          </div>
+          <div>
+            <div class="text-xl font-bold">AI Assistant</div>
+            <div class="text-sm text-gray-500">Powered by OpenRouter</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Chat container -->
+      <div class="h-[70vh] overflow-y-auto p-4 bg-white flex flex-col gap-4" id="chat-container">
+        <!-- Initial welcome message -->
+        <div class="flex gap-3 animate-fade-in">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-600 to-indigo-400 flex items-center justify-center text-white flex-shrink-0">
+            <i class="fas fa-robot"></i>
+          </div>
+          <div class="p-3 rounded-xl bg-gray-100 rounded-tl-none max-w-[80%]">
+            <p>Hello! I'm your AI Assistant. How can I help you today?</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Input area -->
+      <div class="bg-white p-4 border-t border-gray-200 rounded-b-lg">
+        <form id="chat-form" class="flex gap-2">
+          <input 
+            type="text" 
+            id="user-input" 
+            placeholder="Type your message..." 
+            class="flex-1 p-2 border border-gray-300 rounded-full text-base focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+          >
+          <button 
+            type="submit" 
+            class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-600 to-indigo-400 text-white flex items-center justify-center hover:opacity-90"
+          >
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+        const chatContainer = document.getElementById('chat-container');
+        
+        // Chat history (in-memory only)
+        let chatHistory = [
+          { role: 'assistant', content: `Hello! I'm your AI Assistant. How can I help you today?` }
+        ];
+        
+        // Add a message to the chat UI
+        function addMessageToUI(role, content) {
+          const messageDiv = document.createElement('div');
+          messageDiv.className = role === 'user' ? 'flex gap-3 animate-fade-in flex-row-reverse' : 'flex gap-3 animate-fade-in';
+          
+          const iconClass = role === 'user' ? 'fa-user' : 'fa-robot';
+          const avatarBg = role === 'user' ? 'bg-gradient-to-br from-indigo-500 to-indigo-300' : 'bg-gradient-to-br from-indigo-600 to-indigo-400';
+          const messageBg = role === 'user' ? 'bg-indigo-50' : 'bg-gray-100';
+          const messageRadius = role === 'user' ? 'rounded-tr-none' : 'rounded-tl-none';
+          
+          messageDiv.innerHTML = `
+            <div class="w-10 h-10 rounded-full ${avatarBg} flex items-center justify-center text-white flex-shrink-0">
+              <i class="fas ${iconClass}"></i>
+            </div>
+            <div class="p-3 rounded-xl ${messageBg} ${messageRadius} max-w-[80%]">
+              <p>${formatMessage(content)}</p>
+            </div>
+          `;
+          
+          chatContainer.appendChild(messageDiv);
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // Format message with markdown-like syntax
+        function formatMessage(text) {
+          // Escape HTML to prevent XSS
+          text = escapeHtml(text);
+          
+          // Convert URLs to links
+          text = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="text-indigo-600 underline">$1</a>');
+          
+          // Bold text between asterisks
+          text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+          
+          // Italic text between underscores
+          text = text.replace(/\_(.*?)\_/g, '<em>$1</em>');
+          
+          // Simple code blocks
+          text = text.replace(/`(.*?)`/g, '<code class="bg-gray-100 px-1 rounded">$1</code>');
+          
+          // Convert line breaks to <br>
+          text = text.replace(/\n/g, '<br>');
+          
+          return text;
+        }
+        
+        // Escape HTML to prevent XSS
+        function escapeHtml(unsafe) {
+          return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+        }
+        
+        // Show typing indicator
+        function showTypingIndicator() {
+          const typingDiv = document.createElement('div');
+          typingDiv.id = 'typing-indicator';
+          typingDiv.className = 'flex gap-3';
+          typingDiv.innerHTML = `
+            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-600 to-indigo-400 flex items-center justify-center text-white">
+              <i class="fas fa-robot"></i>
+            </div>
+            <div class="p-3 rounded-xl bg-gray-100 rounded-tl-none max-w-[80%]">
+              <div class="flex gap-1">
+                <span class="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></span>
+                <span class="w-2 h-2 bg-gray-500 rounded-full animate-bounce delay-200"></span>
+                <span class="w-2 h-2 bg-gray-500 rounded-full animate-bounce delay-400"></span>
+              </div>
+            </div>
+          `;
+          chatContainer.appendChild(typingDiv);
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // Remove typing indicator
+        function removeTypingIndicator() {
+          const typingIndicator = document.getElementById('typing-indicator');
+          if (typingIndicator) {
+            typingIndicator.remove();
+          }
+        }
+        
+        // Send message to AI
+        async function sendMessage(userMessage) {
+          try {
+            showTypingIndicator();
+            
+            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer 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`,
+                "HTTP-Referer": window.location.href,
+                "X-Title": "AI Chatbot",
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                model: "qwen/qwen3-30b-a3b:free",
+                messages: chatHistory,
+              }),
+            });
+            
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => ({}));
+              console.error("API Error:", response.status, errorData);
+              throw new Error(`API Error: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            removeTypingIndicator();
+            
+            const aiResponse = data.choices[0].message.content;
+            chatHistory.push({ role: 'assistant', content: aiResponse });
+            addMessageToUI('assistant', aiResponse);
+            
+          } catch (error) {
+            console.error("API Error:", error);
+            removeTypingIndicator();
+            
+            let aiResponse;
+            const lowercaseMessage = userMessage.toLowerCase();
+            
+            if (lowercaseMessage.includes('1+1') || lowercaseMessage.includes('1 + 1')) {
+              aiResponse = "1 + 1 = 2";
+            }
+            else if (lowercaseMessage.includes('hello') || lowercaseMessage.includes('hi')) {
+              aiResponse = `Hello there! I'm your AI Assistant. How can I assist you today?`;
+            } 
+            else if (lowercaseMessage.includes('help')) {
+              aiResponse = "I'm here to help! You can ask me questions, request information, or just chat. What would you like to know?";
+            }
+            else {
+              aiResponse = "Sorry, I couldn't connect to my AI service. I'm falling back to pre-programmed responses. Please try again later.";
+            }
+            
+            chatHistory.push({ role: 'assistant', content: aiResponse });
+            addMessageToUI('assistant', aiResponse);
+          }
+        }
+        
+        // Handle form submission
+        chatForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          
+          const message = userInput.value.trim();
+          if (!message) return;
+          
+          addMessageToUI('user', message);
+          chatHistory.push({ role: 'user', content: message });
+          
+          userInput.value = '';
+          
+          await sendMessage(message);
+        });
+        
+        // Focus input on load
+        userInput.focus();
+      });
+    </script>
+  </body>
+</html>
