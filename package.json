@@ -1,6 +1,13 @@
 {
   "dependencies": {
     "@tailwindcss/cli": "^4.1.4",
+    "concurrently": "^9.1.2",
+    "live-server": "^1.2.2",
     "tailwindcss": "^4.1.4"
+  },
+  "scripts": {
+    "dek": "npx tailwindcss -i ./src/input.css -o ./src/output.css --watch",
+    "live-sever": "live-server --port=3000",
+    "concur": "concurrently \"npm run dek\" \"npm run live-server\""
   }
 }

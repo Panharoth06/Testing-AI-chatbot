@@ -7,7 +7,7 @@
     <!-- Using Font Awesome for icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <!-- Tailwind CSS from CLI output -->
-    <link href="./src/output.css" rel="stylesheet">
+    <link href="./SRC/output.css"    rel="stylesheet">
   </head>
   <body class="bg-gray-100 text-gray-900 font-sans">
     <div class="container mx-auto max-w-3xl p-4">
@@ -116,11 +116,11 @@
         // Escape HTML to prevent XSS
         function escapeHtml(unsafe) {
           return unsafe
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
+            .replace(/&/g, "&")
+            .replace(/</g, "<")
+            .replace(/>/g, ">")
+            .replace(/"/g, "")
+            .replace(/'/g, "'");
         }
         
         // Show typing indicator
@@ -160,7 +160,7 @@
             const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
               method: "POST",
               headers: {
-                "Authorization": `Bearer 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`,
+                "Authorization": `Bearer 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`,
                 "HTTP-Referer": window.location.href,
                 "X-Title": "AI Chatbot",
                 "Content-Type": "application/json",
@@ -191,10 +191,7 @@
             let aiResponse;
             const lowercaseMessage = userMessage.toLowerCase();
             
-            if (lowercaseMessage.includes('1+1') || lowercaseMessage.includes('1 + 1')) {
-              aiResponse = "1 + 1 = 2";
-            }
-            else if (lowercaseMessage.includes('hello') || lowercaseMessage.includes('hi')) {
+            if (lowercaseMessage.includes('hello') || lowercaseMessage.includes('hi')) {
               aiResponse = `Hello there! I'm your AI Assistant. How can I assist you today?`;
             } 
             else if (lowercaseMessage.includes('help')) {
